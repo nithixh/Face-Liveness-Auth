@@ -1,0 +1,13 @@
+# Ignore user data and temp images
+users.json
+temp_signup.jpg
+temp_login.jpg
+temp_current.jpg
+
+# Ignore Python cache folders and files
+__pycache__/
+*.pyc
+
+# (Optional) Ignore system files
+.DS_Store
+Thumbs.db
