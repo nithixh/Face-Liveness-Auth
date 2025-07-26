@@ -1,4 +1,4 @@
-# Face-Detection
+#Face-Liveness-Auth
 
 This project is a real-time biometric security system using:
 - Face recognition (with DeepFace)
