@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logged Out</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .centered {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .logout-box {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            padding: 40px 28px 28px 28px;
+            text-align: center;
+        }
+        .logout-box h2 {
+            color: #e74c3c;
+        }
+        .restart-btn {
+            margin-top: 30px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            padding: 8px 28px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .restart-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="centered">
+        <div class="logout-box">
+            <h2>You have been logged out.</h2>
+            <a href="/"><button class="restart-btn">Restart Quiz</button></a>
+        </div>
+    </div>
+</body>
+</html>

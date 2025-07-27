@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anti-Cheat Quiz Demo</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .camera-box-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #fff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 12px 10px 10px 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.13);
+            width: 200px;
+            text-align: center;
+        }
+        .camera-box-fixed video {
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .prompt-area {
+            margin-top: 8px;
+        }
+        .prompt {
+            font-size: 15px;
+            margin-bottom: 5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .prompt.warn {
+            color: #fff;
+            background: #e74c3c;
+        }
+        .prompt.ok {
+            color: #fff;
+            background: #27ae60;
+        }
+        .hand-btn {
+            margin-top: 6px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .hand-btn:hover {
+            background: #0056b3;
+        }
+        .quiz-main {
+            max-width: 600px;
+            margin: 60px auto 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            padding: 32px 28px 28px 28px;
+        }
+        .quiz-main h2 {
+            margin-top: 0;
+            color: #007bff;
+            text-align: center;
+        }
+        .question-block {
+            margin-bottom: 24px;
+        }
+        .q-text {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .option-label {
+            background: #f0f4fa;
+            border: 1px solid #dbeafe;
+            border-radius: 5px;
+            padding: 7px 14px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s, border 0.2s;
+        }
+        .option-label.selected, .option-label:hover {
+            background: #dbeafe;
+            border: 1.5px solid #007bff;
+        }
+        .submit-btn {
+            display: block;
+            margin: 30px auto 0 auto;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            padding: 8px 28px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .submit-btn:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="camera-box-fixed">
+        <video id="camera" width="180" height="135" autoplay playsinline></video>
+        <div class="prompt-area">
+            <div id="liveness-prompt" class="prompt warn" style="display:none;">Please raise your hand for liveness check!</div>
+        </div>
+    </div>
+    <div class="quiz-main">
+        <h2>Anti-Cheat Quiz</h2>
+        {% if username %}
+        <div style="text-align:center; font-size:18px; margin-bottom:15px; color:#007bff;">Welcome, {{ username }}!</div>
+        {% endif %}
+        <form method="POST" action="/submit" id="quiz-form">
+            <ol>
+                {% for q_index, q in questions %}
+                <li class="question-block">
+                    <div class="q-text">{{ q.q }}</div>
+                    <div class="options">
+                        {% for opt in q.options %}
+                        <label class="option-label">
+                            <input type="radio" name="q{{ q_index }}" value="{{ opt }}" required> {{ opt }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+        <div id="quiz-error" style="color:red; text-align:center; margin-top:10px; display:none;"></div>
+    </div>
+    <!-- MediaPipe Hands and drawing utils -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="/static/mediapipe_hands.js"></script>
+    <script>
+    // Camera feed
+    navigator.mediaDevices.getUserMedia({video:true})
+      .then(stream => {
+        document.getElementById('camera').srcObject = stream;
+      });
+
+    // Liveness check
+    let livenessTimeout = null;
+    let livenessActive = false;
+    function randomLivenessCheck() {
+      if (livenessActive) return;
+      const delay = Math.floor(Math.random() * 25 + 15) * 1000; // 15-40s
+      setTimeout(() => {
+        livenessActive = true;
+        document.getElementById('liveness-prompt').style.display = '';
+        livenessTimeout = setTimeout(() => {
+          // logout if not raised in 5s
+          window.location.href = '/logout';
+        }, 5000);
+      }, delay);
+    }
+
+    function passLivenessCheck() {
+      if (livenessActive) {
+        clearTimeout(livenessTimeout);
+        document.getElementById('liveness-prompt').textContent = 'Liveness check passed!';
+        document.getElementById('liveness-prompt').className = 'prompt ok';
+        setTimeout(() => {
+          document.getElementById('liveness-prompt').style.display = 'none';
+          document.getElementById('liveness-prompt').className = 'prompt warn';
+          document.getElementById('liveness-prompt').textContent = 'Please raise your hand for liveness check!';
+          livenessActive = false;
+          randomLivenessCheck();
+        }, 1200);
+      }
+    }
+
+    // Start first liveness check
+    randomLivenessCheck();
+
+    // Use MediaPipe Hands for real hand detection
+    window.onload = function() {
+      const video = document.getElementById('camera');
+      setupHandDetection(video, passLivenessCheck);
+    };
+    </script>
+</body>
+</html>
