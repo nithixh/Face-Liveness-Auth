@@ -64,6 +64,12 @@ Face-Liveness-Auth/
 
 ---
 
+### 🚧 Status: Work in Progress
+
+> This is **not a fully completed application**. Some features are under development and may not work as intended. Planned features include better spoof detection, live video monitoring, and advanced exam control mechanisms.
+
+---
+
 ## 📬 Author
 
 Made with ❤️ by [nithixh](https://github.com/nithixh)
